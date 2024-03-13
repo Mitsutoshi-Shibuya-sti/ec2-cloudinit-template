@@ -1,0 +1,38 @@
+#cloud-config
+timezone: Asia/Tokyo
+
+package_update: true
+package_upgrade: true
+
+groups:
+  - docker
+
+users:
+  - default
+  - name: m-shibuya
+    groups: docker
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN6/wHP8mX6pGo5ELDp/g8MbfVWCQ0nM+qnkF3nhxj/t m-shibuya@sios.com
+
+# 必要な時のみコメントアウトを外す
+# chpasswd:
+#   list: |
+#     root:KMVrZR8ElN3opztUbptuFDgVyN78NmpH
+#   expire: False
+
+packages:
+  - make
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - python3-pip
+  - jq
+runcmd:
+  - mkdir -p /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  - reboot
